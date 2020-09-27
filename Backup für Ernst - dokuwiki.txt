@@ -19,7 +19,7 @@ if test -e /Users/Name/Sites; then
  rm -rf /tmp/dokuwiki-stable*;
 fi;
 # "You are here:" ein- und "Trace:" ausschalten
-sed -e "s#\$conf\['breadcrumbs'\].*#\$conf\['breadcrumbs'\] = 0;                 //how many recent visited pages to show#g;s#\$conf\['youarehere'\].*#\$conf\['youarehere'\]  = 1;                 //show \"You are here\" navigation\? 0|1#g" -i /Users/Name/Sites/dokuwiki-test/conf/dokuwiki.php;
+sed -e "s#\$conf\['breadcrumbs'\].*#\$conf\['breadcrumbs'\] = 0;                 //how many recent visited pages to show#g;s#\$conf\['youarehere'\].*#\$conf\['youarehere'\]  = 1;                 //show \"You are here\" navigation\? 0|1#g" -i .backup /Users/Name/Sites/dokuwiki-test/conf/dokuwiki.php;
 test -e /Users/Name/Sites/dokuwiki-test/data.org || mv /Users/Name/Sites/dokuwiki-test/data /Users/Name/Sites/dokuwiki-test/data.org;
 EOF
 
