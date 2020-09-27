@@ -1,0 +1,82 @@
+#
+# Testinstallation DokuWiki unter mac OS High Sierra on VMware mit Einbindung data-Verzeichnis von Ernsts Backup-Platte
+#
+#!/bin/bash
+cat<<'EOF'|sudo -i root -i
+for i in Downloads Sites; do
+ if ! test -e /Users/Name/$i; then
+  mkdir /Users/Name/$i;
+  chown Name:staff /Users/Name/$i;
+ fi;
+done;
+rm -rf /Users/Name/Sites/dokuwiki-test;
+if test -e /Users/Name/Sites; then
+ curl --insecure --output /tmp/dokuwiki-stable.tgz --location https://github.com/splitbrain/dokuwiki/tarball/stable;
+ if mkdir /tmp/dokuwiki-stable; then
+  tar -xzf /tmp/dokuwiki-stable.tgz -C /tmp/dokuwiki-stable;
+  mv /tmp/dokuwiki-stable/splitbrain-dokuwiki* /Users/Name/Sites/dokuwiki-test;
+ fi;
+ rm -rf /tmp/dokuwiki-stable*;
+fi;
+EOF
+
+#
+# Testinstallation DokuWiki unter Raspberry Pi OS mit Einbindung data-Verzeichnis von Ernsts Backup-Platte
+#
+apt-get install apache2 apache2-bin apache2-data apache2-utils ghostscript gsfonts imagemagick imagemagick-6-common imagemagick-6.q16 libapache2-mod-php7.3 libapr1 libaprutil1 libaprutil1-dbd-sqlite3 libaprutil1-ldap libheif1 libjs-jquery-cookie libjxr-tools libjxr0 liblqr-1-0 libmagickcore-6.q16-6 libmagickcore-6.q16-6-extra libmagickwand-6.q16-6 libnetpbm10 libphp-simplepie libwmf0.2-7 netpbm php php-common php-curl php-geshi php-intl php-ldap php-phpseclib php-random-compat php-xml php7.3 php7.3-cli php7.3-common php7.3-curl php7.3-intl php7.3-json php7.3-ldap php7.3-opcache php7.3-readline php7.3-xml ssl-cert;
+#https://develike.com/en/articles/adding-a-trusted-self-signed-ssl-certificate-to-apache-on-debian-ubuntu
+#https://linuxize.com/post/secure-apache-with-let-s-encrypt-on-debian-10
+#mkdir /var/www/html/dokuwiki-test;
+#wget --no-check-certificate --output-document=/var/www/html/dokuwiki-test/dokuwiki-downloader.php https://github.com/splitbrain/dokuwiki-downloader/raw/master/dokuwiki-downloader.php;
+#http://192.168.178.40/dokuwiki-test/dokuwiki-downloader.php
+rm -rf /var/www/html/dokuwiki-test;
+if test -e /var/www/html; then
+ wget --no-check-certificate --output-document=/tmp/dokuwiki-stable.tgz https://github.com/splitbrain/dokuwiki/tarball/stable;
+ if mkdir /tmp/dokuwiki-stable; then
+  tar -xzf /tmp/dokuwiki-stable.tgz -C /tmp/dokuwiki-stable;
+  mv /tmp/dokuwiki-stable/splitbrain-dokuwiki* /var/www/html/dokuwiki-test;
+ fi;
+ rm -rf /tmp/dokuwiki-stable*;
+fi;
+# "You are here:" ein- und "Trace:" ausschalten
+sed -e "s#\$conf\['breadcrumbs'\].*#\$conf\['breadcrumbs'\] = 0;                 //how many recent visited pages to show#g;s#\$conf\['youarehere'\].*#\$conf\['youarehere'\]  = 1;                 //show \"You are here\" navigation\? 0|1#g" -i /var/www/html/dokuwiki-test/conf/dokuwiki.php;
+test -e /var/www/html/dokuwiki-test/data.org || mv /var/www/html/dokuwiki-test/data /var/www/html/dokuwiki-test/data.org;
+if test -e /media/pi/backup1/backup/dokuwiki/var/lib/dokuwiki/data; then
+ rm -rf /var/www/html/dokuwiki-test/data;
+ cp -af /media/pi/backup1/backup/dokuwiki/var/lib/dokuwiki/data /var/www/html/dokuwiki-test;
+ for i in pages tmp locks attic media media_attic meta media_meta cache index; do mkdir -p /var/www/html/dokuwiki-test/data/$i; done;
+# cp -af /var/www/html/dokuwiki-test/data.org/pages/wiki /var/www/html/dokuwiki-test/data/pages;
+fi;
+chown -R www-data:www-data /var/www/html/dokuwiki-test;
+#http://192.168.178.40/dokuwiki-test/doku.php?id=pages.0:wiki:dokuwiki
+#http://192.168.178.40/dokuwiki-test/doku.php?id=pages.0:steuerberater
+
+-----
+
+apt-get install dokuwiki;
+vi /etc/dokuwiki/apache.conf
+...
+Allow from all
+#       Allow from localhost 127.0.0.1 ::1
+...
+systemctl restart apache2;
+
+root@raspberrypi:~# find / -type d -name dokuwiki 2>/dev/null
+/etc/dokuwiki
+/usr/share/dokuwiki
+/usr/share/doc/dokuwiki
+/var/lib/dokuwiki
+/var/lib/dokuwiki/lib/tpl/dokuwiki
+
+Infos:
+------
+https://www.dokuwiki.org/install:downloader
+https://www.dokuwiki.org/faq:servermove-from-deb
+https://www.dokuwiki.org/faq:servermove
+https://thesysadminnextdoor.wordpress.com/2014/08/02/dokuwiki-on-a-raspberry-pi/
+...
+apt-get install dokuwiki
+configuration files ... /etc/dokuwiki
+root directory ... /usr/share/dokuwiki
+access ... http://127.0.0.1/dokuwiki
+...
