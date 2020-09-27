@@ -1,0 +1,164 @@
+#!/bin/bash
+
+#
+# Installation
+#
+cat << 'EOF' > fuse-ext2_install.sh; chmod +x fuse-ext2_install.sh;
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+brew tap homebrew/cask
+brew cask install osxfuse
+
+# ab hier https://github.com/alperakcan/fuse-ext2#macos script.sh - Stand: 06.06.2020 - eingefügt
+#!/bin/sh
+export PATH=/opt/gnu/bin:$PATH
+export PKG_CONFIG_PATH=/opt/gnu/lib/pkgconfig:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+
+mkdir fuse-ext2.build
+cd fuse-ext2.build
+
+if [ ! -d fuse-ext2 ]; then
+    git clone https://github.com/alperakcan/fuse-ext2.git	
+fi
+
+# m4
+if [ ! -f m4-1.4.17.tar.gz ]; then
+    curl -O -L http://ftp.gnu.org/gnu/m4/m4-1.4.17.tar.gz
+fi
+tar -zxvf m4-1.4.17.tar.gz 
+cd m4-1.4.17
+./configure --prefix=/opt/gnu
+make -j 16
+sudo make install
+cd ../
+    
+# autoconf
+if [ ! -f autoconf-2.69.tar.gz ]; then
+    curl -O -L http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz
+fi
+tar -zxvf autoconf-2.69.tar.gz 
+cd autoconf-2.69
+./configure --prefix=/opt/gnu
+make
+sudo make install
+cd ../
+    
+# automake
+if [ ! -f automake-1.15.tar.gz ]; then
+    curl -O -L http://ftp.gnu.org/gnu/automake/automake-1.15.tar.gz
+fi
+tar -zxvf automake-1.15.tar.gz 
+cd automake-1.15
+./configure --prefix=/opt/gnu
+make
+sudo make install
+cd ../
+    
+# libtool
+if [ ! -f libtool-2.4.6.tar.gz ]; then
+    curl -O -L http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
+fi
+tar -zxvf libtool-2.4.6.tar.gz 
+cd libtool-2.4.6
+./configure --prefix=/opt/gnu
+make
+sudo make install
+cd ../
+
+# e2fsprogs
+if [ ! -f e2fsprogs-1.43.4.tar.gz ]; then
+    curl -O -L https://www.kernel.org/pub/linux/kernel/people/tytso/e2fsprogs/v1.43.4/e2fsprogs-1.43.4.tar.gz
+fi
+tar -zxvf e2fsprogs-1.43.4.tar.gz
+cd e2fsprogs-1.43.4
+./configure --prefix=/opt/gnu --disable-nls
+make
+sudo make install
+sudo make install-libs
+sudo cp /opt/gnu/lib/pkgconfig/* /usr/local/lib/pkgconfig
+cd ../
+    
+# fuse-ext2
+export PATH=/opt/gnu/bin:$PATH
+export PKG_CONFIG_PATH=/opt/gnu/lib/pkgconfig:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+
+cd fuse-ext2
+./autogen.sh
+CFLAGS="-idirafter/opt/gnu/include -idirafter/usr/local/include/osxfuse/" LDFLAGS="-L/opt/gnu/lib -L/usr/local/lib" ./configure
+make
+sudo make install
+EOF
+
+#
+# Funktionstest
+#
+cat << 'EOF' > fuse-ext2_test.sh; chmod +x fuse-ext2_test.sh;
+#!/bin/bash
+
+dd if=/dev/zero of=fuse-ext2.test.dat count=$((1024*1024))
+/opt/gnu/sbin/mkfs.ext2 fuse-ext2.test.dat
+mkdir d; fuse-ext2 fuse-ext2.test.dat d; ls -al d; sudo umount d; rmdir d;
+EOF
+
+#
+# Deinstallation
+#
+cat << 'EOF' > fuse-ext2_uninstall.sh; chmod +x fuse-ext2_uninstall.sh;
+#!/bin/bash
+
+# fuse-ext2
+( cd fuse-ext2.build/fuse-ext2 && sudo make uninstall )
+# e2fsprogs
+( cd fuse-ext2.build/e2fsprogs-1.43 && ( sudo make uninstall-libs; sudo make uninstall ) )
+# libtool
+( cd fuse-ext2.build/libtool-2.4.6 && sudo make uninstall )
+# automake
+( cd fuse-ext2.build/automake-1.15 && sudo make uninstall )
+# autoconf
+( cd fuse-ext2.build/autoconf-2.69 && sudo make uninstall )
+# m4
+( cd fuse-ext2.build/m4-1.4.17 && sudo make uninstall )
+
+# brew
+brew cask uninstall osxfuse
+brew untap homebrew/cask
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh)"
+
+# cleanup
+sudo rm -rf fuse-ext2.build fuse-ext2.test.dat /usr/local/Homebrew /Library/Filesystems/fuse-ext2.fs
+EOF
+
+#
+# Recherche
+#
+cat << 'EOF' > /dev/null
+# Infos:
+https://brew.sh
+...
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+...
+https://github.com/alperakcan/fuse-ext2
+...
+Fuse-ext2 is an EXT2/EXT3/EXT4 filesystem for FUSE, and is built to work with osxfuse.
+Fuse-ext2 requires at least Fuse for macOS version 2.7.5 or greater.
+Fuse for macOS can be installed via homebrew if Homebrew-Cask has been tapped.
+...
+https://github.com/alperakcan/fuse-ext2#macos
+...
+Building from source
+...
+https://apple.stackexchange.com/questions/29842/how-can-i-mount-an-ext4-file-system-on-os-x#29914
+...
+If you don’t mind spending some money on a commercial product, Paragon’s extFS for Mac will give you read and write access to ext2 / ext3 / ext4 file systems. The current version supports all versions of OS X / macOS from 10.10 upwards.
+If you are looking for a free solution, you can setup a Linux virtual machine, mount your volume(s) there and share it / them via Samba or (S)FTP. This post has some details on how to achieve this using VirtualBox
+I used fuse4x and fuse-ext2 successfully, and I recommend fuse-ext2 over ext4fuse ... One can also install OSXFUSE completely via the brew command line package manage
+...
+https://discussions.apple.com/thread/7615849 - How to mount an EXT2 or EXT3 external drive on a Mac (10.8-10.10) ?
+...
+The Mac does not support Ext formatted disks as standard but there is a third-party tool to add this capability. See - https://www.paragon-software.com/home/extfs-mac/
+It says it supports Ext2, Ext3, and Ext4.
+Paragon have a long and reputable history of producing tools to do this sort of thing on a Mac.
+...
+
+# Suche:
+https://duckduckgo.com?q=How to mount an Ext2/Ext3/Ext4 formatted file system on OS X commandline
+EOF
