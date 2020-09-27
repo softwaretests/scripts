@@ -2,6 +2,7 @@
 # Testinstallation DokuWiki unter mac OS High Sierra on VMware mit Einbindung data-Verzeichnis von Ernsts Backup-Platte
 #
 #!/bin/bash
+
 cat<<'EOF'|sudo -u root -i
 for i in Downloads Sites; do
  if ! test -e /Users/Name/$i; then
@@ -21,6 +22,19 @@ fi;
 # "You are here:" ein- und "Trace:" ausschalten
 sed -e "s#\$conf\['breadcrumbs'\].*#\$conf\['breadcrumbs'\] = 0;                 //how many recent visited pages to show#g;s#\$conf\['youarehere'\].*#\$conf\['youarehere'\]  = 1;                 //show \"You are here\" navigation\? 0|1#g" -i .backup /Users/Name/Sites/dokuwiki-test/conf/dokuwiki.php;
 test -e /Users/Name/Sites/dokuwiki-test/data.org || mv /Users/Name/Sites/dokuwiki-test/data /Users/Name/Sites/dokuwiki-test/data.org;
+if ! test -z "$(diskutil list disk2 2>/dev/null | grep -e disk2s1 | grep -e "Linux Filesystem")"; then
+ mkdir mnt.disk2s1;
+ mount -t fuse-ext2 /dev/disk2s1 mnt.disk2s1;
+ if test -e mnt.disk2s1/backup/dokuwiki/var/lib/dokuwiki/data; then
+  rm -rf /Users/Name/Sites/dokuwiki-test/data;
+  cp -af mnt.disk2s1/backup/dokuwiki/var/lib/dokuwiki/data /Users/Name/Sites/dokuwiki-test;
+  for i in pages tmp locks attic media media_attic meta media_meta cache index; do mkdir -p /Users/Name/Sites/dokuwiki-test/data/$i; done;
+  # cp -af /Users/Name/Sites/dokuwiki-test/data.org/pages/wiki /Users/Name/Sites/dokuwiki-test/data/pages;
+ fi;
+ umount mnt.disk2s1;
+ rmdir mnt.disk2s1;
+fi;
+chown -R _www:_www /Users/Name/Sites/dokuwiki-test;
 EOF
 
 #
