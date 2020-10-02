@@ -54,7 +54,7 @@ if mkdir /Users/$(whoami)/Sites/dokuwiki-stable.tmp; then
 fi;
 # "You are here:" ein- und "Trace:" ausschalten
 sed -e "s#\$conf\['breadcrumbs'\].*#\$conf\['breadcrumbs'\] = 0;                 //how many recent visited pages to show#g;s#\$conf\['youarehere'\].*#\$conf\['youarehere'\]  = 1;                 //show \"You are here\" navigation\? 0|1#g" -i .backup /Users/$(whoami)/Sites/dokuwiki-stable/conf/dokuwiki.php;
-if test -d /Volumes/untitled/backup/dokuwiki/var/lib/dokuwiki; then
+if sudo test -d /Volumes/untitled/backup/dokuwiki/var/lib/dokuwiki/data; then
  sudo chown -R _www /Volumes/untitled/backup;
  sudo chmod -R +rx /Volumes/untitled/backup;
  for i in media media_attic media_meta pages; do
@@ -69,6 +69,8 @@ for i in data conf lib/plugins lib/tpl; do
 done;
 sudo rm -f /Library/WebServer/Documents/dokuwiki && sudo ln -s /Users/$(whoami)/Sites/dokuwiki-stable /Library/WebServer/Documents/dokuwiki;
 sudo apachectl restart;
+#http://localhost/dokuwiki/doku.php?id=pages.0:wiki:dokuwiki
+#http://localhost/dokuwiki/doku.php?id=pages.0:steuerberater
 
 #
 # Testinstallation DokuWiki unter Raspberry Pi OS mit Einbindung data-Verzeichnis von Ernsts Backup-Platte
@@ -98,8 +100,6 @@ if test -e /media/pi/backup1/backup/dokuwiki/var/lib/dokuwiki/data; then
 # cp -af /var/www/html/dokuwiki-test/data.org/pages/wiki /var/www/html/dokuwiki-test/data/pages;
 fi;
 chown -R www-data:www-data /var/www/html/dokuwiki-test;
-#http://192.168.178.40/dokuwiki-test/doku.php?id=pages.0:wiki:dokuwiki
-#http://192.168.178.40/dokuwiki-test/doku.php?id=pages.0:steuerberater
 
 -----
 
