@@ -54,16 +54,21 @@ if mkdir /Users/$(whoami)/Sites/dokuwiki-stable.tmp; then
 fi;
 # "You are here:" ein- und "Trace:" ausschalten
 sed -e "s#\$conf\['breadcrumbs'\].*#\$conf\['breadcrumbs'\] = 0;                 //how many recent visited pages to show#g;s#\$conf\['youarehere'\].*#\$conf\['youarehere'\]  = 1;                 //show \"You are here\" navigation\? 0|1#g" -i .backup /Users/$(whoami)/Sites/dokuwiki-stable/conf/dokuwiki.php;
-for i in media media_attic media_meta pages; do
- if ! test -e /Users/$(whoami)/Sites/dokuwiki-stable/data/$i.org; then
-  mv /Users/$(whoami)/Sites/dokuwiki-stable/data/$i /Users/$(whoami)/Sites/dokuwiki-stable/data/$i.org;
-  ln -s /Volumes/untitled/backup/dokuwiki/var/lib/dokuwiki/data/$i /Users/$(whoami)/Sites/dokuwiki-stable/data/$i;
- fi;
-done;
+if -d /Volumes/untitled/backup/dokuwiki/var/lib/dokuwiki; then
+ sudo chown -R _www /Volumes/untitled/backup;
+ sudo chmod -R +rx /Volumes/untitled/backup;
+ for i in media media_attic media_meta pages; do
+  if ! test -e /Users/$(whoami)/Sites/dokuwiki-stable/data/$i.org; then
+   mv /Users/$(whoami)/Sites/dokuwiki-stable/data/$i /Users/$(whoami)/Sites/dokuwiki-stable/data/$i.org;
+   ln -s /Volumes/untitled/backup/dokuwiki/var/lib/dokuwiki/data/$i /Users/$(whoami)/Sites/dokuwiki-stable/data/$i;
+  fi;
+ done;
+fi;
 for i in data conf lib/plugins lib/tpl; do
  sudo chown -R _www /Users/$(whoami)/Sites/dokuwiki-stable/$i;
 done;
 sudo rm -f /Library/WebServer/Documents/dokuwiki && sudo ln -s /Users/$(whoami)/Sites/dokuwiki-stable /Library/WebServer/Documents/dokuwiki;
+sudo apachectl restart;
 
 #
 # Testinstallation DokuWiki unter Raspberry Pi OS mit Einbindung data-Verzeichnis von Ernsts Backup-Platte
