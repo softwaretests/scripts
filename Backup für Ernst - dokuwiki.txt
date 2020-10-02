@@ -54,7 +54,7 @@ if mkdir /Users/$(whoami)/Sites/dokuwiki-stable.tmp; then
 fi;
 # "You are here:" ein- und "Trace:" ausschalten
 sed -e "s#\$conf\['breadcrumbs'\].*#\$conf\['breadcrumbs'\] = 0;                 //how many recent visited pages to show#g;s#\$conf\['youarehere'\].*#\$conf\['youarehere'\]  = 1;                 //show \"You are here\" navigation\? 0|1#g" -i .backup /Users/$(whoami)/Sites/dokuwiki-stable/conf/dokuwiki.php;
-if -d /Volumes/untitled/backup/dokuwiki/var/lib/dokuwiki; then
+if test -d /Volumes/untitled/backup/dokuwiki/var/lib/dokuwiki; then
  sudo chown -R _www /Volumes/untitled/backup;
  sudo chmod -R +rx /Volumes/untitled/backup;
  for i in media media_attic media_meta pages; do
