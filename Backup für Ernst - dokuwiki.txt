@@ -42,39 +42,28 @@ STDOUT
 #
 #!/bin/bash
 
-cat<<'EOF'|sudo -u root -i
-for i in Downloads Sites; do
- if ! test -e /Users/name/$i; then
-  mkdir /Users/name/$i;
-  chown name:staff /Users/name/$i;
- fi;
-done;
-rm -rf /Users/name/Sites/dokuwiki-test;
-if test -e /Users/name/Sites; then
- curl --insecure --output /tmp/dokuwiki-stable.tgz --location https://github.com/splitbrain/dokuwiki/tarball/stable;
- if mkdir /tmp/dokuwiki-stable; then
-  tar -xzf /tmp/dokuwiki-stable.tgz -C /tmp/dokuwiki-stable;
-  mv /tmp/dokuwiki-stable/splitbrain-dokuwiki* /Users/name/Sites/dokuwiki-test;
- fi;
- rm -rf /tmp/dokuwiki-stable*;
+whoami >/dev/null 2>&1 || exit;
+mkdir -p /Users/$(whoami)/Sites;
+test -d /Users/$(whoami)/Sites || exit;
+sudo rm -rf /Users/$(whoami)/Sites/dokuwiki-stable*;
+curl --insecure --output /Users/$(whoami)/Sites/dokuwiki-stable.tgz --location https://github.com/splitbrain/dokuwiki/tarball/stable;
+if mkdir /Users/$(whoami)/Sites/dokuwiki-stable.tmp; then
+ tar -xzf /Users/$(whoami)/Sites/dokuwiki-stable.tgz -C /Users/$(whoami)/Sites/dokuwiki-stable.tmp;
+ mv /Users/$(whoami)/Sites/dokuwiki-stable.tmp/splitbrain-dokuwiki* /Users/$(whoami)/Sites/dokuwiki-stable;
+ rm -rf /Users/$(whoami)/Sites/dokuwiki-stable.t*;
 fi;
 # "You are here:" ein- und "Trace:" ausschalten
-sed -e "s#\$conf\['breadcrumbs'\].*#\$conf\['breadcrumbs'\] = 0;                 //how many recent visited pages to show#g;s#\$conf\['youarehere'\].*#\$conf\['youarehere'\]  = 1;                 //show \"You are here\" navigation\? 0|1#g" -i .backup /Users/name/Sites/dokuwiki-test/conf/dokuwiki.php;
-test -e /Users/name/Sites/dokuwiki-test/data.org || mv /Users/name/Sites/dokuwiki-test/data /Users/name/Sites/dokuwiki-test/data.org;
-if ! test -z "$(diskutil list disk2 2>/dev/null | grep -e disk2s1 | grep -e "Linux Filesystem")"; then
- mkdir mnt.disk2s1;
- mount -t fuse-ext2 /dev/disk2s1 mnt.disk2s1;
- if test -e mnt.disk2s1/backup/dokuwiki/var/lib/dokuwiki/data; then
-  rm -rf /Users/name/Sites/dokuwiki-test/data;
-  cp -af mnt.disk2s1/backup/dokuwiki/var/lib/dokuwiki/data /Users/name/Sites/dokuwiki-test;
-  for i in pages tmp locks attic media media_attic meta media_meta cache index; do mkdir -p /Users/name/Sites/dokuwiki-test/data/$i; done;
-  # cp -af /Users/name/Sites/dokuwiki-test/data.org/pages/wiki /Users/name/Sites/dokuwiki-test/data/pages;
+sed -e "s#\$conf\['breadcrumbs'\].*#\$conf\['breadcrumbs'\] = 0;                 //how many recent visited pages to show#g;s#\$conf\['youarehere'\].*#\$conf\['youarehere'\]  = 1;                 //show \"You are here\" navigation\? 0|1#g" -i .backup /Users/$(whoami)/Sites/dokuwiki-stable/conf/dokuwiki.php;
+for i in media media_attic media_meta pages; do
+ if ! test -e /Users/$(whoami)/Sites/dokuwiki-stable/data.org; then
+  mv /Users/$(whoami)/Sites/dokuwiki-stable/data /Users/$(whoami)/Sites/dokuwiki-stable/data.org;
+  ln -s /Volumes/untitled/backup/dokuwiki/var/lib/dokuwiki/data/$i /Users/$(whoami)/Sites/dokuwiki-stable/data/$i;
  fi;
- umount mnt.disk2s1;
- rmdir mnt.disk2s1;
-fi;
-chown -R _www:_www /Users/name/Sites/dokuwiki-test;
-EOF
+done;
+for i in data conf lib/plugins lib/tpl; do
+ sudo chwon -R _www /Users/$(whoami)/Sites/dokuwiki-stable/$i;
+done;
+sudo rm -f /Library/WebServer/Documents/dokuwiki && sudo ln -s /Users/$(whoami)/Sites/dokuwiki-stable /Library/WebServer/Documents/dokuwiki;
 
 #
 # Testinstallation DokuWiki unter Raspberry Pi OS mit Einbindung data-Verzeichnis von Ernsts Backup-Platte
