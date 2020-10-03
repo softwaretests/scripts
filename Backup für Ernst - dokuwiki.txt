@@ -3,10 +3,10 @@
 #
 #!/bin/bash
 
-cat<<'EOF'|sudo -u root -i
+cat << 'EOF' | sudo -u root -i
 sed -e "s/#LoadModule php7_module libexec\/apache2\/libphp7.so/LoadModule php7_module libexec\/apache2\/libphp7.so/g;s/#LoadModule perl_module libexec\/apache2\/mod_perl.so/LoadModule perl_module libexec\/apache2\/mod_perl.so/g;s/#LoadModule userdir_module libexec\/apache2\/mod_userdir.so/LoadModule userdir_module libexec\/apache2\/mod_userdir.so/g;s/#Include \/private\/etc\/apache2\/extra\/httpd-userdir.conf/Include \/private\/etc\/apache2\/extra\/httpd-userdir.conf/g;" -i "" /etc/apache2/httpd.conf;
 sed -e "s/#Include \/private\/etc\/apache2\/users\/\*.conf/Include \/private\/etc\/apache2\/users\/\*.conf/g;" -i "" /etc/apache2/extra/httpd-userdir.conf;
-cat<<'NAME_CONF'>/etc/apache2/users/name.conf
+cat << 'NAME_CONF' > /etc/apache2/users/name.conf
 <Directory "/Users/name/Sites/">
    AddLanguage en .en
    AddHandler perl-script .pl
@@ -21,7 +21,7 @@ mkdir -p /Users/name/Sites;
 echo "<html><body><h1>My site works</h1></body></html>" > /Users/name/Sites/index.html.en;
 echo "<?php echo phpinfo(); ?>" > ~/Sites/info.php;
 echo "print \$ENV{MOD_PERL} . qq{\n};" >  ~/Sites/info.pl;
-cat<<'STDOUT'>/dev/null
+cat << 'STDOUT' > /dev/null
 #
 # steps t.b.d. manually, see also https://discussions.apple.com/docs/DOC-12034
 #
@@ -40,6 +40,7 @@ STDOUT
 #
 # Testinstallation DokuWiki unter mac OS High Sierra on VMware mit Einbindung data-Verzeichnis von Ernsts Backup-Platte
 #
+cat << 'EOF' > dokuwiki-install.sh; chmod +x dokuwiki-install.sh;
 #!/bin/bash
 
 whoami >/dev/null 2>&1 || exit;
@@ -69,6 +70,7 @@ for i in data conf lib/plugins lib/tpl; do
 done;
 sudo rm -f /Library/WebServer/Documents/dokuwiki && sudo ln -s /Users/$(whoami)/Sites/dokuwiki-stable /Library/WebServer/Documents/dokuwiki;
 sudo apachectl restart;
+EOF
 #http://localhost/dokuwiki/doku.php?id=pages.0:wiki:dokuwiki
 #http://localhost/dokuwiki/doku.php?id=pages.0:steuerberater
 
